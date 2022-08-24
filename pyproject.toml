@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "hydra-vertex-ai-pipeline"
+version = "0.1.0"
+description = ""
+authors = ["Yongtae <y.hwang@jxpress.net"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+kfp = "^1.8.12"
+importlib-metadata = "^4.12.0"
+google-cloud-aiplatform = "^1.15.0"
+pytz = "^2022.2.1"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+isort = "^5.10.1"
+jupyter = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
