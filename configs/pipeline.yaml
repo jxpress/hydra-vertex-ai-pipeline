@@ -1,0 +1,14 @@
+
+#========pipeline========
+name: sample-training-pipeline
+description: sample_training_pipeline
+template_path: vertex-pipelines-sample.json #the yaml for excuting pipeline is generated at this path. 
+compile_pipeline: True #Compile pipeline.yaml or not. If True yaml file is created at template_path.
+
+#========GCP========
+gcp_region: #enter info of your gcp
+gcp_project_id: #enter info of your gcp
+gsc_uri: #uri that data and model is saved
+
+#========training========
+experiment: example
