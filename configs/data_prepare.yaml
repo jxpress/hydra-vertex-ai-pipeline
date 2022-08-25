@@ -1,0 +1,15 @@
+name: Preprocess
+description: Download data
+
+outputs:
+  - {name: data_dir, type: Dataset, description: 'save path of train_dataset'}
+metadata:
+  annotations:
+    author: "" # enter your name
+implementation:
+  container:
+    image: <uri of GCP artifact repository>:<tag> #you can replace it whatever you want.
+    command: [python, main.py]
+    args: [
+      "data_dir={{$.outputs.artifacts['data_dir'].path}}",
+    ]

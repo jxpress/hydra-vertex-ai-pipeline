@@ -1,0 +1,20 @@
+name: Train
+description: Train component
+inputs:
+  - {name: data_dir, type: Dataset, description: 'Train dataset path'}
+  - {name: experiment, type: String, description: 'The Name of experiment'}
+outputs:
+  - {name: model, type: Model, description: 'folder of the save_folder model'}
+metadata:
+  annotations:
+    author: "" # enter your name
+implementation:
+  container:
+    image: <uri of GCP artifact repository>:<tag> #you can replace it whatever you want.
+    command: [python3, src/train.py]
+    args: [
+      "datamodule.data_dir={{$.inputs.artifacts['data_dir'].path}}",
+      "experiment={{$.inputs.parameters['experiment']}}",
+
+      "callbacks.model_checkpoint.dirpath={{$.outputs.artifacts['model'].path}}",
+    ]
