@@ -1,18 +1,18 @@
+import yaml
 from kfp import components, dsl
 from kfp.v2 import compiler
 
-import yaml
 with open("configs/pipeline.yaml") as f:
     cfg = yaml.safe_load(f)
-    
+
+
 @dsl.pipeline(
-    name = cfg["name"],
-    description = cfg["description"],
-    pipeline_root = cfg["gsc_uri"],
+    name=cfg["name"],
+    description=cfg["description"],
+    pipeline_root=cfg["gsc_uri"],
 )
 def pipeline(
     # preprocess
-
     # train
     experiment: str = cfg["experiment"],
 ) -> None:
@@ -48,5 +48,6 @@ def pipeline(
 
 if __name__ == "__main__":
     compiler.Compiler().compile(
-        pipeline_func=pipeline, package_path=cfg["template_path"],
+        pipeline_func=pipeline,
+        package_path=cfg["template_path"],
     )
