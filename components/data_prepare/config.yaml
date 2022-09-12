@@ -1,1 +1,12 @@
 data_dir: datas
+
+functions:
+  - _target_: MNIST # for training
+    root: ${data_dir}
+    train: true
+    download: true
+
+  - _target_: MNIST # for validation
+    root: ${data_dir}
+    train: false
+    download: true
