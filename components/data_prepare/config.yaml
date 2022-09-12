@@ -5,7 +5,6 @@ functions:
     root: ${data_dir}
     train: true
     download: true
-
   - _target_: MNIST # for validation
     root: ${data_dir}
     train: false
