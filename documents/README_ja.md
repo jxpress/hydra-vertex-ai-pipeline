@@ -10,37 +10,38 @@
 ## 👨‍🏭 MLパイプラインとはなにか？
 
 機械学習のトレーニングは、データの前処理、学習、評価等様々なプロセスによって構成されています。
-これらのプロセスを一つのマシーンまたは、コンテナで行う学習をMonolith システムと一般的に言われます (図１ (a))。
+これらのプロセスを、一つのマシーンまたはコンテナで行う学習をMonolith システムと一般的に言われます (図１ (a))。
 機械学習を初めて体験するとき、多くの方がこのシステムを利用したと思われます。
 
 一方、機械学習の運用まで考慮したとき、
 - データとモデルの再現性の担保 (例 : 学習の度に、ランダム性が含まれる前処理が入ると、結果が変化した要因がつかみにくい)
 - プロセスごとに求められるマシーンスペックが異なる (ハイメモリが必要なプロセスもあればGPUが必要なプロセスもある)
 - プロセスが独立しているので、使い回しが用意
+
 等の理由から、個々のプロセス (コンポーネントと一般的に呼ばれる)を独立させ処理を行う、Pipelineでの学習が推奨されています (図１ (b))
 
 <br>
 
-![train_type](/documents/images/hydrapipeline_train_type.png)
-<p align = "center">
-図1 学習システム。 (a)Monolith システムでは、前処理や学習、評価等のプロセスをすべて同じマシーン、またはコンテナで行う。(b) Pipelineシステムでは、各プロセスを分け独立したリソースで実行する。各プロセスは一般的にコンポーネントと呼ばれている。Pipeline システムでは、コンポーネント間のデータは外部のStrageやDBを経由して行われる。
-</p>
+ML Pipelineについてのより詳しい情報は [what-a-machine-learning-pipeline-is-and-why-its-important](https://www.datarobot.com/blog/what-a-machine-learning-pipeline-is-and-why-its-important/)や[Full Stack Deep Learning](https://fullstackdeeplearning.com/course/2022/lecture-4-data-management/)を御覧ください。
+
+また、Googleの[ブログ (Rules of Machine Learning:Best Practices for ML Engineering)](https://developers.google.com/machine-learning/guides/rules-of-ml?hl=en)は、学習はPipelineの利用が前提に書かれています。
 
 
 <br>
 
 
-詳しくは [what-a-machine-learning-pipeline-is-and-why-its-important](https://www.datarobot.com/blog/what-a-machine-learning-pipeline-is-and-why-its-important/)や[Full Stack Deep Learning](https://fullstackdeeplearning.com/course/2022/lecture-4-data-management/)を御覧ください。
+![train_type](/documents/images/hydrapipeline_train_type.png)
+<p align = "center">
+図1 学習システム。 (a)Monolith システムでは、前処理や学習、評価等のプロセスをすべて、同じマシーンまたはコンテナで行う。(b) Pipelineシステムでは、各プロセスを分け独立したリソースで実行する。各プロセスは一般的にコンポーネントと呼ばれている。Pipeline システムでは、コンポーネント間のデータは外部のStrageやDBを経由して行われる。
+</p>
 
-また、Googleの[ブログ (Rules of Machine Learning:Best Practices for ML Engineering)](https://developers.google.com/machine-learning/guides/rules-of-ml?hl=en)は、学習はPipelineの利用が前提に書かれています。
+
 
 <br>
 
 ## 💻 Vertex AI pipelineとはなにか？
 
-
-Pipelineのメリットを享受するために、トレーニングをコンポーネントに分け、それぞれを違うスペックのマシーンで実行するシステムをスクラッチから構築することを想像してみてください。非常に複雑であることが想像できると思います。
-
+トレーニングをコンポーネントに分け、それぞれを違うスペックのマシーンで実行するシステムをスクラッチから構築することを想像してみると、非常に複雑であることが想像できると思います。
 一方、Vertex AI Pipelineを利用することで、図2に示すようにGCPの他のサービスと連携しながらML Pipelineを容易に構築することができます
 
 ![Intro_vertex_ai_pipeline](/documents/images/Intro_vertex_ai_pipeline.png)
@@ -59,14 +60,81 @@ Vertex AIを用いることで、ML Pipelineの構築が楽に行えることが
 
 <br>
 
-## 😖hydraとVertex AI Pipelineの問題点
-各コンポーネントにわたす引数を
-## 解決法
+#  HydraとVertex AI Pipeline
+[Hydra](https://hydra.cc/)はハイパーパラメーター管理のライブラリとして、非常に素晴らしく、この[例](https://github.com/ashleve/lightning-hydra-template)のように様々な学習コードの取り組まれています。
+一方、Hydraで記載されたコンテナを、Vertex AI Pipelineのコンポーネントとして利用しようとした場合、問題が発生します。
+## 😖 Problem
+Vertex AIでは、各コンポーネントにわたす引数を、yamlファイルのargsで定義します。
+この際、[Vertex AIの公式の書き方](https://cloud.google.com/vertex-ai/docs/pipelines/build-own-components)では
+```yaml
+    command: [python3, main.py]
+    args: [
+      --project, {inputValue: project},
+    ]
+```
+のように記述する必要があり、以下のように、`argparse`形式のコマンドがコンテナに渡されます。
+```bash
+python3 main.py --project <value of project>
+```
 
-# how to use
-## step1. componentの作成とartificial registoryへpush
-## step2. componentをつなぐ
-## step3. Run it on Vertex AI
+一方、Hydraを用いたコンテナには
+```bash
+python3 main.py project=<value of project>
+```
+の形式でコマンドを引き渡す必要があり、工夫無しで実行するとエラーになります。
 
-# further information
-## valueとpath以外の書き方 :わからないことがあった場合
+
+## 💡 Solution
+
+yamlファイルの書き方を
+```yaml
+    command: [python3, main.py]
+    args: [
+      'project={{$.inputs.parameters["project"]}}',
+    ]
+```
+に変更する必要があります。一般的に利用される引数と、それに対応する変換方法は表１に掲載しています。 (例は[こちら](/configs/components/train.yaml))
+
+
+<br>
+
+
+
+表１ : Vertex AIで推奨されている引数の渡し方をHydra用変換する対応表
+
+|  Recommended writing style  |  How to rewrite for Hydra  |
+| ---- | ---- |
+|   --input-val, {inputValue: Input_name}  |  input-val={{$.inputs.parameters['Input_name']}}  |
+|   --input-path, {inputPath: Input_path_name}  |  input-path={{$.inputs.artifacts['Input_path_name'].path}}  |
+|   --output-path, {outputPath: Output_path_name}  |  output-path={{$.inputs.artifacts['Output_path_name'].path}}  |
+
+
+
+<br>
+
+
+<br>
+
+
+
+# 🚀 How to use this repository
+このサンプルレポジトリはMNISTの分類するAIの学習を行います。Pipelineは、
+- data prepare : MNISTのデータをダウンロードする
+- train : 学習を行う
+の２つのコンポーネントから構成されます。
+
+![](/documents/images/screen_shot_pipeline.png) #TODO ここを変える
+## ✅ step1. componentの作成とArtifact Registryへpush
+- Artifact Registryにpushするuriをそれぞれ決め、それをMakefileのpush-data-prepare-imageとpush-train-imageに書き込みます。
+
+- その後、本レポジトリのroot ディレクトリにて、
+```bash
+make push-data-prepare-image
+make push-train-image
+```
+をタイプすると、２つのコンポーネントがのビルドとpushがされます。
+
+※ sample codeではdata prepareのdocker imageは本レポジトリの[components/data_prepare](/components/data_prepare)で作成、trainは[Hydraで書かれた学習コード](https://github.com/jxpress/lightning-hydra-template-vertex-ai)で作成し、Artifact Registryにpushすることを想定しています。
+
+## ✅ step2. componentをつなぐ
+## ✅ step3. Run it on Vertex AI

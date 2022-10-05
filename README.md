@@ -49,14 +49,83 @@ For more information about Vertex AI Pipeline, please see [official documentatio
 If you want to know excellent sample code, please see [this sample code](https://github.com/reproio/lab_sample_pipelines), which is truly excellent for starting Vertex AI Pipeline.
 
 
-## hydraとVertex AIのpipelineの問題点
-## 解決法
+# Hydra and Vertex AI Pipeline
+[Hydra](https://hydra.cc/) is a excellent library for hyperparameter management.
+Various learning codes have been written, as in [this example](https://github.com/ashleve/lightning-hydra-template).
+On the other hand, problems arise when trying to use containers written in Hydra as components of the Vertex AI Pipeline.
 
-# how to use
-## step1. componentの作成とartificial registoryへpush
-data prepareもhydra likeな書き方を下
-## step2. componentをつなぐ
-## step3. Run it on Vertex AI
+## 😖 Problem
+In Vertex AI Pipeline, the arguments to be passed to each component are defined in the args of the yaml file.
+According to [Official document of Vertex AI](https://cloud.google.com/vertex-ai/docs/pipelines/build-own-components), it is necessary to write like below.
+
+```yaml
+    command: [python3, main.py]
+    args: [
+      --project, {inputValue: project},
+    ]
+```
+
+this leads following command being passed to the container
+
+```bash
+python3 main.py --project <value of project>
+```
+
+
+However, passing commands in this format to a container using Hydra will result in an error.
+This is because the code written in Hydra requires the command to be passed in the following format
+
+```bash
+python3 main.py project=<value of project>
+```
+## 💡 Solution
+The coding style of the yaml file needs to be changed as follows.
+```yaml
+    command: [python3, main.py]
+    args: [
+      'project={{$.inputs.parameters["project"]}}',
+    ]
+```
+
+Commonly used arguments and the corresponding conversion methods are listed in Table 1. 
+
+Table 1 : Correspondence table for converting the recommended argument passing in Vertex AI for Hydra.
+|  Recommended writing style  |  How to rewrite for Hydra  |
+| ---- | ---- |
+|   --input-val, {inputValue: Input_name}  |  input-val={{$.inputs.parameters['Input_name']}}  |
+|   --input-path, {inputPath: Input_path_name}  |  input-path={{$.inputs.artifacts['Input_path_name'].path}}  |
+|   --output-path, {outputPath: Output_path_name}  |  output-path={{$.inputs.artifacts['Output_path_name'].path}}  |
+
+
+
+
+<br>
+
+
+<br>
+
+
+
+# 🚀 How to use this 
+This sample repository will train an AI to classify MNIST.
+Pipeline consists of the following two components
+- data prepare : download MNIST data
+- train : perform training
+
+## ✅ step1. Build and push Docker Image
+- Decide uri of data_prepare and train to push, and write them in the Makefile push-data-prepare-image and push-train-image.
+
+- Then, in the root directory of this repository, run
+```bash
+make push-data-prepare-image
+make push-train-image
+```
+to built and pushed two Docker Images.
+
+※  In the sample code, the Docker Image for data prepare is build in [components/data_prepare](/components/data_prepare) in this repository and train is build in [train code written in Hydra](https://github.com/jxpress/lightning-hydra-template-vertex-ai).
+
+## ✅ step2. componentをつなぐ
+## ✅ step3. Run it on Vertex AI
 
 # further information
 ## valueとpath以外の書き方 :わからないことがあった場合
