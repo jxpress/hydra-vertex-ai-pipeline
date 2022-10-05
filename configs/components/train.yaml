@@ -15,6 +15,5 @@ implementation:
     args: [
       "datamodule.data_dir={{$.inputs.artifacts['data_dir'].path}}",
       "experiment={{$.inputs.parameters['experiment']}}",
-
       "callbacks.model_checkpoint.dirpath={{$.outputs.artifacts['model'].path}}",
     ]
