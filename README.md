@@ -2,9 +2,10 @@
 
 ![training_type](/documents/images/hydra_pipeline_title.png)
 
-This repository contains sample code and instructions on **how to run code written in Hydra through the Vertex AI Pipeline**.
+This repository focus on `how to run code written in Hydra on the Vertex AI Pipeline`.
 
-[The first half of the README](#usage) describes `how to use the repository`, and [the second half](#description) provides `a brief description of Vertex Pipeline, compatibility issues with Hydra, and how to resolve them`.
+- [The first half of the README](#usage) describes **how to use the repository**
+- [The second half](#description) provides **a brief description of Vertex Pipeline, compatibility issues with Hydra, and how to resolve them**.
 
 The Japanese Version of Readme is [here](/documents/README_ja.md)
 
@@ -12,7 +13,7 @@ The Japanese Version of Readme is [here](/documents/README_ja.md)
 
 
 <h1 id="usage">🚀 How to use this Repository</h1>
-This sample repository will train an AI to classify MNIST.
+This sample repository shows a pipeline system to classify MNIST.
 The pipeline consists of the following two components
 - data prepare: download MNIST data
 - train: perform training
