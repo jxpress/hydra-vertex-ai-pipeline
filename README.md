@@ -126,8 +126,9 @@ The pipeline consists of the following two components
 - data prepare: download MNIST data
 - train: perform training
 
+![pipeline](/documents/images/pipeline_image.png)
 ## ✅ step1. Build and push Docker Images
-- Decide uris of **data_prepare** and **train** to push to GCP, and write them in the push-data-prepare-image and push-train-image of [Makefile](/Makefile).
+- Decide URIs of **data_prepare** and **train** to push to GCP, and write them in the push-data-prepare-image and push-train-image of [Makefile](/Makefile).
 
 - Then, in the root directory of this repository, run
 ```bash
@@ -136,7 +137,43 @@ make push-train-image
 ```
 to build and pushed two Docker Images.
 
-※  In the sample code, the Docker Image for data prepare is build in [components/data_prepare](/components/data_prepare) in this repository and train is build in [train code written in Hydra](https://github.com/jxpress/lightning-hydra-template-vertex-ai).
+※  In the sample code, the Docker Image of data_prepare is built in [components/data_prepare](/components/data_prepare) in this repository and of train is built in [train code written in Hydra](https://github.com/jxpress/lightning-hydra-template-vertex-ai).
 
-## ✅ step2. componentをつなぐ
-## ✅ step3. Run it on Vertex AI
+## ✅ step2. Building python environment
+Run 
+```bash
+make build-python-environment
+```
+
+## ✅ step3. Compile Vertex AI pipeline system
+1. Add the image URIs used in step1 to implementation.container.image of [data_prepare.yaml](configs/components/data_prepare.yaml) and [train.yaml](configs/components/train.yaml).
+2. Add information about your GCP account to [pipeline.yaml](configs/pipeline.yaml)
+3. Run 
+```bash
+poetry run python pipeline.py
+```
+
+then `vertex-pipelines-sample.json` will be created
+
+## ✅ step4. Run Vertex AI Pipeline on GCP
+There are 2 ways to run a pipeline. 
+
+### 1.  Submit JSON file to GCP console.
+1. Access [the console of Pipeline](https://console.cloud.google.com/vertex-ai/pipelines/runs)
+2. Click `CREATE RUN` at the top of the console screen.
+
+![CREATE_RUN](/documents/images/CREATE_RUN.png)
+
+
+3. Click `Pipeline` and choose `Upload file`. Then upload `vertex-pipelines-sample.json` which was created in step4.
+
+![create_pipeline_run](/documents/images/create_pipeline_run.png)
+
+4. Click `SUBMIT` to run the pipeline.
+
+### 2. Submit JSON file via python.
+Run the following command
+```bash
+poetry run python submit_pipeline_job.py
+```
+
