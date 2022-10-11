@@ -1,4 +1,4 @@
-name: Preprocess
+name: data_prepare
 description: Download data
 
 outputs:
