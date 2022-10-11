@@ -1,4 +1,5 @@
 # Hydra-Vertex-AI-Pipeline
+このレポジトリでは、ML Pipeline のshort introductionとHydraで書かれたコンテナVertex AI Pipelineで実装する具体的な方法とそのサンプルコードを掲載しています。
 
 ![training_type](/documents/images/hydra_pipeline_title.png)
 
@@ -107,6 +108,14 @@ yamlファイルの書き方を
 |   --input-val, {inputValue: Input_name}  |  input-val={{$.inputs.parameters['Input_name']}}  |
 |   --input-path, {inputPath: Input_path_name}  |  input-path={{$.inputs.artifacts['Input_path_name'].path}}  |
 |   --output-path, {outputPath: Output_path_name}  |  output-path={{$.inputs.artifacts['Output_path_name'].path}}  |
+
+
+![command error](/documents/images/command.png)
+
+
+<p align = "center">
+図3 YAMLファイルのコマンドを修正する理由と方法の概要図. Hydraで書かれたで公式のコーディングスタイルを使用するとエラーが発生します。エラーを回避するためには、コードを書き換える必要があります。
+</p>
 
 
 
