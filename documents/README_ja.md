@@ -1,5 +1,7 @@
 # Hydra-Vertex-AI-Pipeline
-このレポジトリでは、ML Pipeline のshort introductionとHydraで書かれたコンテナVertex AI Pipelineで実装する具体的な方法とそのサンプルコードを掲載しています。
+このレポジトリは、Hydraで書かれたcodeをVertex AI Pipelineで実行するために必要な方法と、そのsample codeを掲載しています。
+
+READMEの[前半部](#usage)でレポジトリの使い方を、[後半部](#description)でVertex Pipelineの簡単な説明とHydraとの相性問題、及びその解決方法について記載しています。
 
 ![training_type](/documents/images/hydra_pipeline_title.png)
 
@@ -7,7 +9,68 @@
 <br>
 
 
-#  📝 ML Pipelineについて
+<h1 id="usage">🚀 How to use this Repository</h1>
+このサンプルレポジトリはMNISTの分類するAIの学習を行います。Pipelineは、
+- data prepare : MNISTのデータをダウンロードする
+- train : 学習を行う
+の２つのコンポーネントから構成されます。
+
+![pipeline](/documents/images/pipeline_image.png)
+## ✅ step1. componentの作成とArtifact Registryへpush
+- Artifact RegistryにpushするURIをそれぞれ決め、それをMakefileのpush-data-prepare-imageとpush-train-imageに書き込みます。
+
+- その後、本レポジトリのroot ディレクトリにて、
+```bash
+make push-data-prepare-image
+make push-train-image
+```
+をタイプすると、２つのコンポーネントがのビルドとpushがされます。
+
+※ sample codeではdata prepareのdocker imageは本レポジトリの[components/data_prepare](/components/data_prepare)で作成、trainは[Hydraで書かれた学習コード](https://github.com/jxpress/lightning-hydra-template-vertex-ai)で作成し、Artifact Registryにpushすることを想定しています。
+
+## ✅ step2. Building python environment
+以下のコマンドをroot folderで入力することでpythonの環境が構築されます。
+```bash
+make build-python-environment
+```
+
+## ✅ step3. Compile Vertex AI pipeline system
+1. step1で作成した URIを[data_prepare.yaml](configs/components/data_prepare.yaml) と [train.yaml](configs/components/train.yaml)のimplementation.container.imageに書き足します。
+2.[pipeline.yaml](configs/pipeline.yaml)にあなたのGCPのアカウントの情報を加える
+3. 以下のコマンドをroot folderで入力することでpipelineがコンパイルされ、`vertex-pipelines-sample.json`が生成されます。
+```bash
+poetry run python pipeline.py
+```
+
+
+## ✅ step4. Run Vertex AI Pipeline on GCP
+コンパイルしたPipelineをGCPで実行するには以下の２つの方法があります。
+
+### 1.  GCPのコンソールに生成されたJSONを提出する
+1. [the console of Pipeline](https://console.cloud.google.com/vertex-ai/pipelines/runs)にアクセスします。
+2. 画面上部の`CREATE RUN`をクリックします。
+
+![CREATE_RUN](/documents/images/CREATE_RUN.png)
+
+
+3. 現れた画面で`Pipeline` と `Upload file`をクリックし、さきほど作成した`vertex-pipelines-sample.json`を選択しアップロードします。
+
+![create_pipeline_run](/documents/images/create_pipeline_run.png)
+
+4. `SUBMIT` をクリックすることでPipelineが実行されます。
+
+### 2.Pythonを用いてJSONを提出する
+以下のコマンドをroot folderで入力することでPythonを経由で`vertex-pipelines-sample.json`をGCPに提出する事ができます
+```bash
+poetry run python submit_pipeline_job.py
+```
+
+
+
+
+
+<h1 id="description">📝 About the ML Pipeline</h1>
+
 ## 👨‍🏭 MLパイプラインとはなにか？
 
 機械学習のトレーニングは、データの前処理、学習、評価等様々なプロセスによって構成されています。
@@ -123,61 +186,3 @@ yamlファイルの書き方を
 
 
 <br>
-
-
-
-# 🚀 How to use this repository
-このサンプルレポジトリはMNISTの分類するAIの学習を行います。Pipelineは、
-- data prepare : MNISTのデータをダウンロードする
-- train : 学習を行う
-の２つのコンポーネントから構成されます。
-
-![](/documents/images/screen_shot_pipeline.png) #TODO ここを変える
-## ✅ step1. componentの作成とArtifact Registryへpush
-- Artifact RegistryにpushするURIをそれぞれ決め、それをMakefileのpush-data-prepare-imageとpush-train-imageに書き込みます。
-
-- その後、本レポジトリのroot ディレクトリにて、
-```bash
-make push-data-prepare-image
-make push-train-image
-```
-をタイプすると、２つのコンポーネントがのビルドとpushがされます。
-
-※ sample codeではdata prepareのdocker imageは本レポジトリの[components/data_prepare](/components/data_prepare)で作成、trainは[Hydraで書かれた学習コード](https://github.com/jxpress/lightning-hydra-template-vertex-ai)で作成し、Artifact Registryにpushすることを想定しています。
-
-## ✅ step2. Building python environment
-以下のコマンドをroot folderで入力することでpythonの環境が構築されます。
-```bash
-make build-python-environment
-```
-
-## ✅ step3. Compile Vertex AI pipeline system
-1. step1で作成した URIを[data_prepare.yaml](configs/components/data_prepare.yaml) と [train.yaml](configs/components/train.yaml)のimplementation.container.imageに書き足します。
-2.[pipeline.yaml](configs/pipeline.yaml)にあなたのGCPのアカウントの情報を加える
-3. 以下のコマンドをroot folderで入力することでpipelineがコンパイルされ、`vertex-pipelines-sample.json`が生成されます。
-```bash
-poetry run python pipeline.py
-```
-
-
-## ✅ step4. Run Vertex AI Pipeline on GCP
-コンパイルしたPipelineをGCPで実行するには以下の２つの方法があります。
-
-### 1.  GCPのコンソールに生成されたJSONを提出する
-1. [the console of Pipeline](https://console.cloud.google.com/vertex-ai/pipelines/runs)にアクセスします。
-2. 画面上部の`CREATE RUN`をクリックします。
-
-![CREATE_RUN](/documents/images/CREATE_RUN.png)
-
-
-3. 現れた画面で`Pipeline` と `Upload file`をクリックし、さきほど作成した`vertex-pipelines-sample.json`を選択しアップロードします。
-
-![create_pipeline_run](/documents/images/create_pipeline_run.png)
-
-4. `SUBMIT` をクリックすることでPipelineが実行されます。
-
-### 2.Pythonを用いてJSONを提出する
-以下のコマンドをroot folderで入力することでPythonを経由で`vertex-pipelines-sample.json`をGCPに提出する事ができます
-```bash
-poetry run python submit_pipeline_job.py
-```
