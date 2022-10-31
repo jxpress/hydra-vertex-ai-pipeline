@@ -1,15 +1,83 @@
 # Hydra-Vertex-AI-Pipeline
 
-This repository contains **a short introduction to the ML Pipeline** and specific instructions and sample code to implement it in a container **Vertex AI Pipeline written in Hydra**.
 ![training_type](/documents/images/hydra_pipeline_title.png)
 
+This repository focus on `how to run code written in Hydra on the Vertex AI Pipeline`.
 
-The Japanese Version of Readme is [here](/documents/README_ja.md)
+- [The first half of the README](#usage) describes **how to use the repository**
+- [The second half](#description) provides **a brief description of Vertex Pipeline, compatibility issues with Hydra, and how to resolve them**.
+
+The Japanese blog is [here](https://tech.jxpress.net/entry/2022/10/31/113519)
 
 <br>
 
 
-#  📝 Abour the ML Pipeline
+<h1 id="usage">🚀 How to use this Repository</h1>
+This sample repository shows a pipeline system to classify MNIST.
+The pipeline consists of the following two components
+
+- data prepare: download MNIST data
+- train: perform training
+
+![pipeline](/documents/images/pipeline_image.png)
+## ✅ step1. Build and push Docker Images
+- Decide URIs of **data_prepare** and **train** to push to GCP, and write them in the push-data-prepare-image and push-train-image of [Makefile](/Makefile).
+
+- Then, in the root directory of this repository, run
+```bash
+make push-data-prepare-image
+make push-train-image
+```
+to build and pushed two Docker Images.
+
+※  In the sample code, the Docker Image of the data prepare is built in [components/data_prepare](/components/data_prepare) in this repository.
+The process of the data prepare is written by Hydra. In detail, after writing function codes in [functions](/components/data_prepare/functions/), You can determine the functions to be processed as parameters by writing them in [config.yaml](/components/data_prepare/config.yaml), which is a similar way to [manage hyperparameters in AI training](https://github.com/ashleve/lightning-hydra-template).
+
+Also, the Docker Image of the train is from [train code written in Hydra](https://github.com/jxpress/lightning-hydra-template-vertex-ai).
+
+## ✅ step2. Building python environment
+Run 
+```bash
+make build-python-environment
+```
+
+## ✅ step3. Compile Vertex AI pipeline system
+1. Add the image URIs used in step1 to implementation.container.image of [data_prepare.yaml](configs/components/data_prepare.yaml) and [train.yaml](configs/components/train.yaml).
+2. Add information about your GCP account to [pipeline.yaml](configs/pipeline.yaml)
+3. Run 
+```bash
+poetry run python pipeline.py
+```
+
+then `vertex-pipelines-sample.json` will be created
+
+## ✅ step4. Run Vertex AI Pipeline on GCP
+There are 2 ways to run a pipeline. 
+
+### 1.  Submit JSON file to GCP console.
+1. Access [the console of Pipeline](https://console.cloud.google.com/vertex-ai/pipelines/runs)
+2. Click `CREATE RUN` at the top of the console screen.
+
+![CREATE_RUN](/documents/images/CREATE_RUN.png)
+
+
+3. Click `Pipeline` and choose `Upload file`. Then upload `vertex-pipelines-sample.json` which was created in step4.
+
+![create_pipeline_run](/documents/images/create_pipeline_run.png)
+
+4. Click `SUBMIT` to run the pipeline.
+
+### 2. Submit JSON file via python.
+Run the following command
+```bash
+poetry run python submit_pipeline_job.py
+```
+
+---
+
+
+<h1 id="description">📝 About the ML Pipeline</h1>
+
 ## 👨‍🏭 What is the ML Pipeline?
 Training process of Deep Learning usually consists of various processes such as data preprocessing, training, and evaluation.
 Training in which these processes are performed on a single machine or container is commonly referred to as a Monolith system (Figure 1 (a)).
@@ -117,63 +185,4 @@ Figure3 Schematic Diagram of why and how to modify commands in the YAML file. a 
 
 
 <br>
-
-
-
-# 🚀 How to use this Repository
-This sample repository will train an AI to classify MNIST.
-The pipeline consists of the following two components
-- data prepare: download MNIST data
-- train: perform training
-
-![pipeline](/documents/images/pipeline_image.png)
-## ✅ step1. Build and push Docker Images
-- Decide URIs of **data_prepare** and **train** to push to GCP, and write them in the push-data-prepare-image and push-train-image of [Makefile](/Makefile).
-
-- Then, in the root directory of this repository, run
-```bash
-make push-data-prepare-image
-make push-train-image
-```
-to build and pushed two Docker Images.
-
-※  In the sample code, the Docker Image of data_prepare is built in [components/data_prepare](/components/data_prepare) in this repository and of train is built in [train code written in Hydra](https://github.com/jxpress/lightning-hydra-template-vertex-ai).
-
-## ✅ step2. Building python environment
-Run 
-```bash
-make build-python-environment
-```
-
-## ✅ step3. Compile Vertex AI pipeline system
-1. Add the image URIs used in step1 to implementation.container.image of [data_prepare.yaml](configs/components/data_prepare.yaml) and [train.yaml](configs/components/train.yaml).
-2. Add information about your GCP account to [pipeline.yaml](configs/pipeline.yaml)
-3. Run 
-```bash
-poetry run python pipeline.py
-```
-
-then `vertex-pipelines-sample.json` will be created
-
-## ✅ step4. Run Vertex AI Pipeline on GCP
-There are 2 ways to run a pipeline. 
-
-### 1.  Submit JSON file to GCP console.
-1. Access [the console of Pipeline](https://console.cloud.google.com/vertex-ai/pipelines/runs)
-2. Click `CREATE RUN` at the top of the console screen.
-
-![CREATE_RUN](/documents/images/CREATE_RUN.png)
-
-
-3. Click `Pipeline` and choose `Upload file`. Then upload `vertex-pipelines-sample.json` which was created in step4.
-
-![create_pipeline_run](/documents/images/create_pipeline_run.png)
-
-4. Click `SUBMIT` to run the pipeline.
-
-### 2. Submit JSON file via python.
-Run the following command
-```bash
-poetry run python submit_pipeline_job.py
-```
 
