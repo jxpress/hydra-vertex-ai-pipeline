@@ -7,7 +7,7 @@ This repository focus on `how to run code written in Hydra on the Vertex AI Pipe
 - [The first half of the README](#usage) describes **how to use the repository**
 - [The second half](#description) provides **a brief description of Vertex Pipeline, compatibility issues with Hydra, and how to resolve them**.
 
-The Japanese Version of Readme is [here](/documents/README_ja.md)
+The Japanese blog is [here](https://tech.jxpress.net/entry/2022/10/31/113519)
 
 <br>
 
@@ -15,6 +15,7 @@ The Japanese Version of Readme is [here](/documents/README_ja.md)
 <h1 id="usage">🚀 How to use this Repository</h1>
 This sample repository shows a pipeline system to classify MNIST.
 The pipeline consists of the following two components
+
 - data prepare: download MNIST data
 - train: perform training
 
@@ -29,7 +30,10 @@ make push-train-image
 ```
 to build and pushed two Docker Images.
 
-※  In the sample code, the Docker Image of data_prepare is built in [components/data_prepare](/components/data_prepare) in this repository and of train is built in [train code written in Hydra](https://github.com/jxpress/lightning-hydra-template-vertex-ai).
+※  In the sample code, the Docker Image of the data prepare is built in [components/data_prepare](/components/data_prepare) in this repository.
+The process of the data prepare is written by Hydra. In detail, after writing function codes in [functions](/components/data_prepare/functions/), You can determine the functions to be processed as parameters by writing them in [config.yaml](/components/data_prepare/config.yaml), which is a similar way to [manage hyperparameters in AI training](https://github.com/ashleve/lightning-hydra-template).
+
+Also, the Docker Image of the train is from [train code written in Hydra](https://github.com/jxpress/lightning-hydra-template-vertex-ai).
 
 ## ✅ step2. Building python environment
 Run 
@@ -69,7 +73,7 @@ Run the following command
 poetry run python submit_pipeline_job.py
 ```
 
-
+---
 
 
 <h1 id="description">📝 About the ML Pipeline</h1>
